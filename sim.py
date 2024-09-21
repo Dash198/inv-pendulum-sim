@@ -27,6 +27,7 @@ running = True
 #taking a random action
 action = env.action_space.sample()
 integ=0
+
 for _ in range(999):
     scrn.fill((0, 0, 0))
 
@@ -46,19 +47,29 @@ for _ in range(999):
 
     # Unpack observation values
     x_cart = int(observation[0] * x_cart_scale) + width // 2  # Scale and centre the cart
-    ang = observation[2]
-    ang_vel=observation[3]
+    keys=pygame.key.get_pressed()
 
-    #implementing a pid controller
-    integ+=ang
-    kp=1
-    kd=0.1
-    ki=0.001
-    u=kp*ang + kd*ang_vel
-    if(u>0):
-        action=1
-    elif(u<0):
+    #added a way to test the balance by adding force to the cart by pressing the arow keys
+    if(keys[pygame.K_LEFT]):
+        print('right')
         action=0
+    elif(keys[pygame.K_RIGHT]):
+        print('left')
+        action=1
+    else:
+        ang = observation[2]
+        ang_vel=observation[3]
+
+        #implementing a pid controller
+        integ+=ang
+        kp=1
+        kd=0.1
+        ki=0.001
+        u=kp*ang + kd*ang_vel + ki*integ
+        if(u>0):
+            action=1
+        elif(u<0):
+            action=0
 
     # Calculate pendulum position
     x_p = x_cart + pendulum_len * math.sin(ang)
